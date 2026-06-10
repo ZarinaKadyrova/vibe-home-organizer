@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Где это лежит?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f0f2;
+    --border: #e0e0e5;
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #999;
+    --accent: #4f6ef7;
+    --accent-light: #eef0ff;
+    --danger: #e53e3e;
+    --danger-light: #fff5f5;
+    --toast-bg: #222;
+    --toast-text: #fff;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 14px;
+    --radius-sm: 8px;
+    --cat0: #4f6ef7; --cat1: #e06bab; --cat2: #f5a623;
+    --cat3: #38c49c; --cat4: #9b6ef3; --cat5: #e05a3a;
+    --cat6: #5ab8e0; --cat7: #8bc43a; --cat8: #f0c040;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111113;
+      --surface: #1c1c1e;
+      --surface2: #2c2c2e;
+      --border: #3a3a3c;
+      --text: #f0f0f0;
+      --text2: #aaa;
+      --text3: #666;
+      --accent: #6b84ff;
+      --accent-light: #1e2045;
+      --danger: #ff6b6b;
+      --danger-light: #2a1010;
+      --toast-bg: #f0f0f0;
+      --toast-text: #111;
+      --shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px 10px;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .app-title {
+    font-size: 20px;
+    font-weight: 800;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.03em;
+  }
+  .header-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+  }
+  .header-stats span b { color: var(--accent); }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 44px;
+    padding: 0 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: opacity .15s, background .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { opacity: .75; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--surface2); color: var(--text); }
+  .btn-ghost { background: transparent; color: var(--text2); padding: 0 10px; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-sm { height: 36px; padding: 0 12px; font-size: 13px; }
+  .btn-icon { width: 44px; padding: 0; font-size: 20px; border-radius: 50%; }
+
+  /* search row */
+  .search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+  }
+  .search-wrap .ico { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text3); pointer-events: none; }
+  input[type=text], input[type=search], select, textarea {
+    width: 100%;
+    font-size: 16px;
+    font-family: inherit;
+    background: var(--surface2);
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type=text]:focus, input[type=search]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  input[type=search] { padding: 10px 12px 10px 36px; height: 44px; }
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .filter-row select {
+    flex: 1;
+    padding: 8px 10px;
+    height: 38px;
+    font-size: 14px;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    padding: 16px;
+    padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom)));
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ---- CARDS GRID ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  @media (min-width: 560px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 860px) {
+    .grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: box-shadow .15s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card:active { transform: scale(.98); }
+  .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+  .card-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    overflow: hidden;
+  }
+  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-name {
+    font-weight: 700;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.02em;
+  }
+  .card-loc {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-loc::before { content: '📍 '; }
+  .cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 4px;
+    opacity: .9;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  mark { background: #fff176; color: inherit; border-radius: 2px; padding: 0 1px; }
+  @media (prefers-color-scheme: dark) { mark { background: #665500; } }
+  .member-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 4px;
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .member-badge::before { content: '👤 '; }
+
+  /* ---- LIGHTBOX ---- */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    background: rgba(0,0,0,.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  #lightbox.open { opacity: 1; pointer-events: all; }
+  #lightbox img {
+    max-width: 96vw;
+    max-height: 92vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.6);
+    user-select: none;
+  }
+  #lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ---- EMPTY STATE ---- */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+    grid-column: 1 / -1;
+  }
+  .empty .ico { font-size: 60px; margin-bottom: 14px; }
+  .empty h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--text); letter-spacing: -0.02em; }
+  .empty p { font-size: 15px; font-weight: 500; }
+
+  /* ---- FAB ---- */
+  .fab {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 28px;
+    box-shadow: 0 4px 16px rgba(79,110,247,.45);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    transition: transform .15s, box-shadow .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fab:active { transform: scale(.92); }
+
+  /* ---- OVERLAY / MODAL ---- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+  @media (min-width: 600px) {
+    .overlay { align-items: center; }
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+    transform: translateY(40px);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  @media (min-width: 600px) {
+    .modal { border-radius: var(--radius); max-height: 85vh; }
+  }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+    display: block;
+  }
+  @media (min-width: 600px) { .modal-handle { display: none; } }
+  .modal-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    padding-right: 32px;
+    letter-spacing: -0.03em;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.02em; text-transform: uppercase; }
+  .field input[type=text], .field select, .field textarea {
+    padding: 10px 12px;
+    width: 100%;
+  }
+  .field textarea { height: 72px; resize: vertical; }
+  .field select { padding-right: 28px; }
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  .photo-field { display: flex; align-items: center; gap: 12px; }
+  .photo-preview {
+    width: 72px; height: 72px;
+    border-radius: 10px;
+    background: var(--surface2);
+    border: 1.5px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    overflow: hidden;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+  input[type=file] { display: none; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .modal-actions .btn { flex: 1; }
+
+  /* ---- VIEW MODAL ---- */
+  .view-photo {
+    width: 100%;
+    height: 180px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .view-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .view-name { font-size: 26px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.03em; }
+  .info-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+  .info-row:last-of-type { border-bottom: none; }
+  .info-label { color: var(--text2); min-width: 90px; flex-shrink: 0; font-weight: 600; }
+  .info-val { font-weight: 600; }
+  .view-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .view-actions .btn { flex-direction: column; gap: 3px; height: 52px; font-size: 12px; }
+  .view-actions .btn .act-ico { font-size: 20px; }
+
+  /* ---- MOVE MODAL ---- */
+  .move-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .move-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .15s;
+  }
+  .move-item.current { border-color: var(--accent); background: var(--accent-light); }
+  .move-item .loc-name { flex: 1; font-weight: 500; }
+  .move-item .loc-count { font-size: 12px; color: var(--text2); }
+
+  /* ---- MANAGE MODAL (tabs) ---- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--surface2); border-radius: var(--radius-sm); padding: 3px; }
+  .tab {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text2);
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    letter-spacing: -0.01em;
+  }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .manage-list { display: flex; flex-direction: column; gap: 6px; }
+  .manage-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+  }
+  .manage-item .m-name { flex: 1; font-weight: 600; font-size: 15px; }
+  .manage-item .m-count { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .manage-item .m-del { background: none; border: none; color: var(--danger); font-size: 20px; cursor: pointer; padding: 4px; opacity: .7; }
+  .manage-item .m-del:hover { opacity: 1; }
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .add-row input { padding: 10px 12px; flex: 1; }
+
+  /* ---- TOAST ---- */
+  #toast {
+    position: fixed;
+    bottom: max(80px, calc(60px + env(safe-area-inset-bottom)));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 11px 20px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    z-index: 400;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---- CONFIRM DIALOG ---- */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+  }
+  .confirm-overlay.open { opacity: 1; pointer-events: all; }
+  .confirm-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,.2);
+  }
+  .confirm-box h3 { font-size: 19px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .confirm-box p { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 20px; }
+  .confirm-btns { display: flex; gap: 10px; }
+  .confirm-btns .btn { flex: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="app-title">📦 Где это лежит?</div>
+    <div class="header-stats">
+      <span>🗂 <b id="st-items">0</b></span>
+      <span>📍 <b id="st-locs">0</b></span>
+      <span>🏷 <b id="st-cats">0</b></span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="openManage()">Места и категории</button>
+  </div>
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input type="search" id="search" placeholder="Поиск вещи..." oninput="render()" autocomplete="off">
+    </div>
+  </div>
+  <div class="filter-row">
+    <div class="select-wrap" style="flex:1">
+      <select id="filter-cat" onchange="render()">
+        <option value="">Все категории</option>
+      </select>
+    </div>
+    <div class="select-wrap" style="flex:1">
+      <select id="filter-loc" onchange="render()">
+        <option value="">Все места</option>
+      </select>
+    </div>
+    <div class="select-wrap" style="flex:1">
+      <select id="filter-member" onchange="render()">
+        <option value="">Все члены семьи</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<button class="fab" onclick="openAdd()" title="Добавить вещь">＋</button>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="ov-form" onclick="overlayClick(event,'ov-form')">
+  <div class="modal" role="dialog">
+    <span class="modal-handle"></span>
+    <button class="modal-close" onclick="closeModal('ov-form')">✕</button>
+    <div class="modal-title" id="form-title">Добавить вещь</div>
+    <input type="hidden" id="form-id">
+    <div class="field">
+      <label>Название *</label>
+      <input type="text" id="f-name" placeholder="Напр.: Паспорт">
+    </div>
+    <div class="field">
+      <label>Место хранения *</label>
+      <div class="select-wrap">
+        <select id="f-loc"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Категория</label>
+      <div class="select-wrap">
+        <select id="f-cat"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Принадлежит</label>
+      <div class="select-wrap">
+        <select id="f-member"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Заметки</label>
+      <textarea id="f-notes" placeholder="Дополнительная информация..."></textarea>
+    </div>
+    <div class="field">
+      <label>Фото</label>
+      <div class="photo-field">
+        <div class="photo-preview" id="f-photo-prev" onclick="document.getElementById('f-file').click()">📷</div>
+        <div style="flex:1">
+          <button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:6px" onclick="document.getElementById('f-file').click()">Выбрать фото</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%;font-size:12px;color:var(--danger)" id="f-photo-del" onclick="clearPhoto()" style="display:none">Удалить фото</button>
+        </div>
+        <input type="file" id="f-file" accept="image/*" capture="environment" onchange="loadPhoto(event)">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('ov-form')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveItem()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="overlay" id="ov-view" onclick="overlayClick(event,'ov-view')">
+  <div class="modal" role="dialog">
+    <span class="modal-handle"></span>
+    <button class="modal-close" onclick="closeModal('ov-view')">✕</button>
+    <div id="view-photo-wrap" class="view-photo"></div>
+    <div class="view-name" id="view-name"></div>
+    <div id="view-rows"></div>
+    <div class="view-actions">
+      <button class="btn btn-secondary" onclick="editCurrent()"><span class="act-ico">✏️</span>Изменить</button>
+      <button class="btn btn-secondary" onclick="moveCurrent()"><span class="act-ico">📦</span>Переместить</button>
+      <button class="btn btn-secondary" onclick="deleteCurrent()" style="color:var(--danger)"><span class="act-ico">🗑</span>Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVE MODAL -->
+<div class="overlay" id="ov-move" onclick="overlayClick(event,'ov-move')">
+  <div class="modal" role="dialog">
+    <span class="modal-handle"></span>
+    <button class="modal-close" onclick="closeModal('ov-move')">✕</button>
+    <div class="modal-title">Переместить в...</div>
+    <div class="move-list" id="move-list"></div>
+    <div class="add-row">
+      <input type="text" id="move-new-loc" placeholder="Новое место...">
+      <button class="btn btn-primary btn-sm" onclick="moveToNew()">Создать и переместить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE MODAL -->
+<div class="overlay" id="ov-manage" onclick="overlayClick(event,'ov-manage')">
+  <div class="modal" role="dialog">
+    <span class="modal-handle"></span>
+    <button class="modal-close" onclick="closeModal('ov-manage')">✕</button>
+    <div class="modal-title">Места и категории</div>
+    <div class="tabs">
+      <button class="tab active" id="tab-locs" onclick="switchTab('locs')">📍 Места</button>
+      <button class="tab" id="tab-cats" onclick="switchTab('cats')">🏷 Категории</button>
+      <button class="tab" id="tab-members" onclick="switchTab('members')">👤 Люди</button>
+    </div>
+    <div id="manage-locs-panel">
+      <div class="manage-list" id="manage-locs-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-loc" placeholder="Новое место...">
+        <button class="btn btn-primary btn-sm" onclick="addLoc()">Добавить</button>
+      </div>
+    </div>
+    <div id="manage-cats-panel" style="display:none">
+      <div class="manage-list" id="manage-cats-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-cat" placeholder="Новая категория...">
+        <button class="btn btn-primary btn-sm" onclick="addCat()">Добавить</button>
+      </div>
+    </div>
+    <div id="manage-members-panel" style="display:none">
+      <div class="manage-list" id="manage-members-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-member" placeholder="Имя члена семьи...">
+        <button class="btn btn-primary btn-sm" onclick="addMember()">Добавить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirm-ov">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Подтверждение</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" onclick="confirmResolve(false)">Отмена</button>
+      <button class="btn btn-danger" onclick="confirmResolve(true)">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+// ---- DATA ----
+const STORAGE_KEY = 'hInvData';
+const CAT_COLORS = ['#4f6ef7','#e06bab','#f5a623','#38c49c','#9b6ef3','#e05a3a','#5ab8e0','#8bc43a','#f0c040'];
+
+let data = { items: [], locations: [], categories: [], members: [] };
+let currentId = null;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) data = JSON.parse(raw);
+  } catch(e) {}
+  if (!data.items) data.items = [];
+  if (!data.locations) data.locations = [];
+  if (!data.categories) data.categories = [];
+  if (!data.members) data.members = [];
+  if (data.locations.length === 0) seedDefaults();
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function seedDefaults() {
+  data.locations = ['Прихожая','Кабинет','Гараж','Спальня','Кухня','Кладовка'].map(n=>({id:uid(),name:n}));
+  data.categories = ['Одежда','Документы','Инструменты','Электроника','Посуда','Книги','Игрушки'].map((n,i)=>({id:uid(),name:n,color:CAT_COLORS[i%CAT_COLORS.length]}));
+  data.items = [
+    { id: uid(), name: 'Куртка зимняя', locationId: data.locations[3].id, categoryId: data.categories[0].id, notes: 'Синяя, в пакете', photo: '' },
+    { id: uid(), name: 'Паспорт', locationId: data.locations[1].id, categoryId: data.categories[1].id, notes: '', photo: '' },
+    { id: uid(), name: 'Отвёртка крестовая', locationId: data.locations[2].id, categoryId: data.categories[2].id, notes: 'Красная ручка', photo: '' },
+  ];
+  save();
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function getLoc(id) { return data.locations.find(l=>l.id===id); }
+function getCat(id) { return data.categories.find(c=>c.id===id); }
+function getMember(id) { return data.members.find(m=>m.id===id); }
+
+// ---- RENDER ----
+function render() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const fcId = document.getElementById('filter-cat').value;
+  const flId = document.getElementById('filter-loc').value;
+
+  const fmId = document.getElementById('filter-member').value;
+
+  let filtered = data.items.filter(it => {
+    if (fcId && it.categoryId !== fcId) return false;
+    if (flId && it.locationId !== flId) return false;
+    if (fmId && it.memberId !== fmId) return false;
+    if (q) {
+      const loc = getLoc(it.locationId);
+      const cat = getCat(it.categoryId);
+      const mem = getMember(it.memberId);
+      const hay = [it.name, loc?.name, cat?.name, mem?.name, it.notes].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // stats
+  const visLocs = new Set(filtered.map(i=>i.locationId));
+  const visCats = new Set(filtered.map(i=>i.categoryId).filter(Boolean));
+  document.getElementById('st-items').textContent = filtered.length;
+  document.getElementById('st-locs').textContent = visLocs.size;
+  document.getElementById('st-cats').textContent = visCats.size;
+
+  // filters
+  populateFilters();
+
+  const grid = document.getElementById('grid');
+  if (filtered.length === 0) {
+    grid.innerHTML = q || fcId || flId
+      ? `<div class="empty"><div class="ico">🔍</div><h3>Ничего не найдено</h3><p>Попробуйте другой запрос или сбросьте фильтры</p></div>`
+      : `<div class="empty"><div class="ico">📦</div><h3>Вещей пока нет</h3><p>Нажмите ＋, чтобы добавить первую вещь</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(it => cardHTML(it, q)).join('');
+  grid.querySelectorAll('.card').forEach(el => {
+    el.addEventListener('click', () => openView(el.dataset.id));
+  });
+}
+
+function highlight(text, q) {
+  if (!q || !text) return esc(text || '');
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return esc(text);
+  return esc(text.slice(0,idx)) + '<mark>' + esc(text.slice(idx, idx+q.length)) + '</mark>' + esc(text.slice(idx+q.length));
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function cardHTML(it, q) {
+  const loc = getLoc(it.locationId);
+  const cat = getCat(it.categoryId);
+  const thumb = it.photo
+    ? `<div class="card-thumb"><img src="${it.photo}" alt=""></div>`
+    : `<div class="card-thumb">${cat ? '📦' : '📦'}</div>`;
+  const member = getMember(it.memberId);
+  const badge = cat ? `<span class="cat-badge" style="background:${cat.color}">${highlight(cat.name, q)}</span>` : '';
+  const memberBadge = member ? `<span class="member-badge">${highlight(member.name, q)}</span>` : '';
+  return `<div class="card" data-id="${it.id}">
+    ${thumb}
+    <div class="card-body">
+      <div class="card-name">${highlight(it.name, q)}</div>
+      <div class="card-loc">${highlight(loc?.name || '—', q)}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">${badge}${memberBadge}</div>
+    </div>
+  </div>`;
+}
+
+function populateFilters() {
+  const fc = document.getElementById('filter-cat');
+  const fl = document.getElementById('filter-loc');
+  const fm = document.getElementById('filter-member');
+  const fcVal = fc.value, flVal = fl.value, fmVal = fm.value;
+  fc.innerHTML = '<option value="">Все категории</option>' +
+    data.categories.map(c=>`<option value="${c.id}"${fcVal===c.id?' selected':''}>${esc(c.name)}</option>`).join('');
+  fl.innerHTML = '<option value="">Все места</option>' +
+    data.locations.map(l=>`<option value="${l.id}"${flVal===l.id?' selected':''}>${esc(l.name)}</option>`).join('');
+  fm.innerHTML = '<option value="">Все члены семьи</option>' +
+    data.members.map(m=>`<option value="${m.id}"${fmVal===m.id?' selected':''}>${esc(m.name)}</option>`).join('');
+}
+
+// ---- ADD / EDIT ----
+let formPhoto = '';
+
+function openAdd() {
+  formPhoto = '';
+  document.getElementById('form-id').value = '';
+  document.getElementById('form-title').textContent = 'Добавить вещь';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-notes').value = '';
+  updatePhotoPreview('');
+  populateFormSelects('', '', '');
+  openModal('ov-form');
+  setTimeout(()=>document.getElementById('f-name').focus(), 300);
+}
+
+function openEdit(id) {
+  const it = data.items.find(i=>i.id===id);
+  if (!it) return;
+  formPhoto = it.photo || '';
+  document.getElementById('form-id').value = id;
+  document.getElementById('form-title').textContent = 'Редактировать';
+  document.getElementById('f-name').value = it.name;
+  document.getElementById('f-notes').value = it.notes || '';
+  updatePhotoPreview(it.photo || '');
+  populateFormSelects(it.locationId, it.categoryId, it.memberId || '');
+  openModal('ov-form');
+}
+
+function populateFormSelects(locId, catId, memberId) {
+  document.getElementById('f-loc').innerHTML =
+    data.locations.map(l=>`<option value="${l.id}"${l.id===locId?' selected':''}>${esc(l.name)}</option>`).join('');
+  document.getElementById('f-cat').innerHTML =
+    '<option value="">— без категории —</option>' +
+    data.categories.map(c=>`<option value="${c.id}"${c.id===catId?' selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('f-member').innerHTML =
+    '<option value="">— не указано —</option>' +
+    data.members.map(m=>`<option value="${m.id}"${m.id===memberId?' selected':''}>${esc(m.name)}</option>`).join('');
+}
+
+function loadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    // resize
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      formPhoto = c.toDataURL('image/jpeg', 0.8);
+      updatePhotoPreview(formPhoto);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function updatePhotoPreview(src) {
+  const el = document.getElementById('f-photo-prev');
+  el.innerHTML = src ? `<img src="${src}" alt="">` : '📷';
+  document.getElementById('f-photo-del').style.display = src ? '' : 'none';
+}
+
+function clearPhoto() { formPhoto = ''; updatePhotoPreview(''); }
+
+function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  const locId = document.getElementById('f-loc').value;
+  if (!name) { shake('f-name'); return; }
+  if (!locId) { shake('f-loc'); return; }
+  const id = document.getElementById('form-id').value;
+  const obj = {
+    id: id || uid(),
+    name,
+    locationId: locId,
+    categoryId: document.getElementById('f-cat').value || '',
+    memberId: document.getElementById('f-member').value || '',
+    notes: document.getElementById('f-notes').value.trim(),
+    photo: formPhoto,
+  };
+  if (id) {
+    const idx = data.items.findIndex(i=>i.id===id);
+    if (idx !== -1) data.items[idx] = obj;
+    toast('Изменения сохранены');
+  } else {
+    data.items.unshift(obj);
+    toast('Вещь добавлена');
+  }
+  save();
+  closeModal('ov-form');
+  render();
+}
+
+function shake(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--danger)';
+  setTimeout(()=>el.style.borderColor='', 1500);
+}
+
+// ---- VIEW ----
+function openView(id) {
+  currentId = id;
+  const it = data.items.find(i=>i.id===id);
+  if (!it) return;
+  const loc = getLoc(it.locationId);
+  const cat = getCat(it.categoryId);
+
+  const member = getMember(it.memberId);
+  const photoWrap = document.getElementById('view-photo-wrap');
+  if (it.photo) {
+    photoWrap.innerHTML = `<img src="${it.photo}" alt="" style="cursor:zoom-in" onclick="openLightbox('${it.photo}')">`;
+    photoWrap.style.display = 'block';
+  } else {
+    photoWrap.innerHTML = '📦';
+    photoWrap.style.display = 'flex';
+  }
+
+  document.getElementById('view-name').textContent = it.name;
+
+  let rows = `<div class="info-row"><span class="info-label">📍 Место</span><span class="info-val">${esc(loc?.name||'—')}</span></div>`;
+  if (cat) rows += `<div class="info-row"><span class="info-label">🏷 Категория</span><span class="info-val"><span class="cat-badge" style="background:${cat.color}">${esc(cat.name)}</span></span></div>`;
+  if (member) rows += `<div class="info-row"><span class="info-label">👤 Чья вещь</span><span class="info-val">${esc(member.name)}</span></div>`;
+  if (it.notes) rows += `<div class="info-row"><span class="info-label">📝 Заметки</span><span class="info-val">${esc(it.notes)}</span></div>`;
+  document.getElementById('view-rows').innerHTML = rows;
+
+  openModal('ov-view');
+}
+
+function editCurrent() { closeModal('ov-view'); openEdit(currentId); }
+function moveCurrent() { closeModal('ov-view'); openMoveModal(currentId); }
+function deleteCurrent() {
+  confirm2('Удалить вещь?', 'Это действие нельзя отменить.').then(ok => {
+    if (!ok) return;
+    data.items = data.items.filter(i=>i.id!==currentId);
+    save();
+    closeModal('ov-view');
+    toast('Вещь удалена');
+    render();
+  });
+}
+
+// ---- MOVE ----
+function openMoveModal(id) {
+  currentId = id;
+  const it = data.items.find(i=>i.id===id);
+  if (!it) return;
+  document.getElementById('move-new-loc').value = '';
+  const list = document.getElementById('move-list');
+  list.innerHTML = data.locations.map(l => {
+    const cnt = data.items.filter(i=>i.locationId===l.id).length;
+    const cur = l.id === it.locationId;
+    return `<div class="move-item${cur?' current':''}" onclick="moveTo('${l.id}')">
+      <span class="loc-name">📍 ${esc(l.name)}${cur?' ✓':''}</span>
+      <span class="loc-count">${cnt} вещ.</span>
+    </div>`;
+  }).join('');
+  openModal('ov-move');
+}
+
+function moveTo(locId) {
+  const it = data.items.find(i=>i.id===currentId);
+  if (!it || it.locationId === locId) { closeModal('ov-move'); return; }
+  const from = getLoc(it.locationId)?.name || '?';
+  it.locationId = locId;
+  const to = getLoc(locId)?.name || '?';
+  save();
+  closeModal('ov-move');
+  toast(`Перемещено: ${from} → ${to}`);
+  render();
+}
+
+function moveToNew() {
+  const name = document.getElementById('move-new-loc').value.trim();
+  if (!name) return;
+  if (data.locations.find(l=>l.name.toLowerCase()===name.toLowerCase())) {
+    toast('Такое место уже есть');
+    return;
+  }
+  const loc = { id: uid(), name };
+  data.locations.push(loc);
+  save();
+  moveTo(loc.id);
+}
+
+// ---- MANAGE ----
+let manageTab = 'locs';
+function openManage() { renderManage(); openModal('ov-manage'); }
+
+function switchTab(tab) {
+  manageTab = tab;
+  document.getElementById('tab-locs').classList.toggle('active', tab==='locs');
+  document.getElementById('tab-cats').classList.toggle('active', tab==='cats');
+  document.getElementById('tab-members').classList.toggle('active', tab==='members');
+  document.getElementById('manage-locs-panel').style.display = tab==='locs' ? '' : 'none';
+  document.getElementById('manage-cats-panel').style.display = tab==='cats' ? '' : 'none';
+  document.getElementById('manage-members-panel').style.display = tab==='members' ? '' : 'none';
+}
+
+function renderManage() {
+  const ll = document.getElementById('manage-locs-list');
+  ll.innerHTML = data.locations.map(l => {
+    const cnt = data.items.filter(i=>i.locationId===l.id).length;
+    return `<div class="manage-item">
+      <span class="m-name">📍 ${esc(l.name)}</span>
+      <span class="m-count">${cnt}</span>
+      <button class="m-del" onclick="delLoc('${l.id}')" title="Удалить">✕</button>
+    </div>`;
+  }).join('') || '<p style="color:var(--text3);font-size:14px;padding:8px 0">Нет мест</p>';
+
+  const cl = document.getElementById('manage-cats-list');
+  cl.innerHTML = data.categories.map(c => {
+    const cnt = data.items.filter(i=>i.categoryId===c.id).length;
+    return `<div class="manage-item">
+      <span class="cat-badge" style="background:${c.color}">${esc(c.name)}</span>
+      <span class="m-count">${cnt}</span>
+      <button class="m-del" onclick="delCat('${c.id}')" title="Удалить">✕</button>
+    </div>`;
+  }).join('') || '<p style="color:var(--text3);font-size:14px;padding:8px 0">Нет категорий</p>';
+
+  const ml = document.getElementById('manage-members-list');
+  ml.innerHTML = data.members.map(m => {
+    const cnt = data.items.filter(i=>i.memberId===m.id).length;
+    return `<div class="manage-item">
+      <span class="m-name">👤 ${esc(m.name)}</span>
+      <span class="m-count">${cnt}</span>
+      <button class="m-del" onclick="delMember('${m.id}')" title="Удалить">✕</button>
+    </div>`;
+  }).join('') || '<p style="color:var(--text3);font-size:14px;padding:8px 0">Нет членов семьи</p>';
+}
+
+function addLoc() {
+  const name = document.getElementById('new-loc').value.trim();
+  if (!name) return;
+  if (data.locations.find(l=>l.name.toLowerCase()===name.toLowerCase())) { toast('Уже есть'); return; }
+  data.locations.push({ id: uid(), name });
+  document.getElementById('new-loc').value = '';
+  save(); renderManage(); render();
+  toast('Место добавлено');
+}
+document.getElementById('new-loc').addEventListener('keydown', e=>{ if(e.key==='Enter') addLoc(); });
+
+function delLoc(id) {
+  const cnt = data.items.filter(i=>i.locationId===id).length;
+  const msg = cnt ? `В этом месте хранится ${cnt} вещей. Вещи останутся без места.` : 'Место будет удалено.';
+  confirm2('Удалить место?', msg).then(ok => {
+    if (!ok) return;
+    data.locations = data.locations.filter(l=>l.id!==id);
+    data.items.forEach(it => { if(it.locationId===id) it.locationId=''; });
+    save(); renderManage(); render();
+    toast('Место удалено');
+  });
+}
+
+function addCat() {
+  const name = document.getElementById('new-cat').value.trim();
+  if (!name) return;
+  if (data.categories.find(c=>c.name.toLowerCase()===name.toLowerCase())) { toast('Уже есть'); return; }
+  const color = CAT_COLORS[data.categories.length % CAT_COLORS.length];
+  data.categories.push({ id: uid(), name, color });
+  document.getElementById('new-cat').value = '';
+  save(); renderManage(); render();
+  toast('Категория добавлена');
+}
+document.getElementById('new-cat').addEventListener('keydown', e=>{ if(e.key==='Enter') addCat(); });
+
+function addMember() {
+  const name = document.getElementById('new-member').value.trim();
+  if (!name) return;
+  if (data.members.find(m=>m.name.toLowerCase()===name.toLowerCase())) { toast('Уже есть'); return; }
+  data.members.push({ id: uid(), name });
+  document.getElementById('new-member').value = '';
+  save(); renderManage(); render();
+  toast('Добавлено');
+}
+document.getElementById('new-member').addEventListener('keydown', e=>{ if(e.key==='Enter') addMember(); });
+
+function delMember(id) {
+  const cnt = data.items.filter(i=>i.memberId===id).length;
+  const msg = cnt ? `Этот человек указан в ${cnt} вещах.` : 'Будет удалён из списка.';
+  confirm2('Удалить?', msg).then(ok => {
+    if (!ok) return;
+    data.members = data.members.filter(m=>m.id!==id);
+    data.items.forEach(it => { if(it.memberId===id) it.memberId=''; });
+    save(); renderManage(); render();
+    toast('Удалено');
+  });
+}
+
+function delCat(id) {
+  const cnt = data.items.filter(i=>i.categoryId===id).length;
+  const msg = cnt ? `Эта категория используется в ${cnt} вещах.` : 'Категория будет удалена.';
+  confirm2('Удалить категорию?', msg).then(ok => {
+    if (!ok) return;
+    data.categories = data.categories.filter(c=>c.id!==id);
+    data.items.forEach(it => { if(it.categoryId===id) it.categoryId=''; });
+    save(); renderManage(); render();
+    toast('Категория удалена');
+  });
+}
+
+// ---- MODAL HELPERS ----
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClick(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('lightbox').classList.contains('open')) { closeLightbox(); return; }
+    ['ov-form','ov-view','ov-move','ov-manage'].forEach(id => {
+      if (document.getElementById(id).classList.contains('open')) closeModal(id);
+    });
+  }
+});
+
+// ---- LIGHTBOX ----
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ---- TOAST ----
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ---- CONFIRM ----
+let confirmCb = null;
+function confirm2(title, msg) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    document.getElementById('confirm-ov').classList.add('open');
+    confirmCb = resolve;
+  });
+}
+function confirmResolve(val) {
+  document.getElementById('confirm-ov').classList.remove('open');
+  if (confirmCb) { confirmCb(val); confirmCb = null; }
+}
+
+// ---- INIT ----
+load();
+render();
+</script>
+</body>
+</html>
